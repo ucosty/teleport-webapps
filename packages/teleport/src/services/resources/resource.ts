@@ -21,6 +21,12 @@ class ResourceService {
       .then(res => makeResourceList<'oidc'>(res));
   }
 
+  fetchSAMLConnectors() {
+    return api
+      .get(cfg.getSAMLConnectorsUrl())
+      .then(res => makeResourceList<'saml'>(res));
+  }
+
   fetchRoles() {
     return api
       .get(cfg.getRolesUrl())
@@ -51,6 +57,11 @@ class ResourceService {
       .then(res => makeResource<'oidc'>(res));
   }
 
+  createSAMLConnector(content: string) {
+    return api
+      .post(cfg.getSAMLConnectorsUrl(), { content })
+      .then(res => makeResource<'saml'>(res));
+  }
 
   updateTrustedCluster(content: string) {
     return api
@@ -76,6 +87,12 @@ class ResourceService {
       .then(res => makeResource<'oidc'>(res));
   }
 
+  updateSAMLConnector(content: string) {
+    return api
+      .put(cfg.getSAMLConnectorsUrl(), { content })
+      .then(res => makeResource<'saml'>(res));
+  }
+
   deleteTrustedCluster(name: string) {
     return api.delete(cfg.getTrustedClustersUrl(name));
   }
@@ -90,6 +107,10 @@ class ResourceService {
 
   deleteOIDCConnector(name: string) {
     return api.delete(cfg.getOIDCConnectorsUrl(name));
+  }
+
+  deleteSAMLConnector(name: string) {
+    return api.delete(cfg.getSAMLConnectorsUrl(name));
   }
 }
 
