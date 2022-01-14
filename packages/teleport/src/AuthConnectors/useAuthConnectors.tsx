@@ -21,24 +21,70 @@ import useTeleport from 'teleport/useTeleport';
 
 export default function useAuthConnectors() {
   const ctx = useTeleport();
-  const [items, setItems] = useState<Resource<'github'>[]>([]);
+  const [github_items, setItems] = useState<Resource<'github'>[]>([]);
+  const [oidc_items, setOidcItems] = useState<Resource<'oidc'>[]>([]);
+  const [saml_items, setSamlItems] = useState<Resource<'saml'>[]>([]);
   const { attempt, run } = useAttempt('processing');
 
   function fetchData() {
+    ctx.resourceService.fetchOIDCConnectors().then(response => {
+        setOidcItems(response);
+    });
+    ctx.resourceService.fetchSAMLConnectors().then(response => {
+        setSamlItems(response);
+    });
     return ctx.resourceService.fetchGithubConnectors().then(response => {
       setItems(response);
     });
   }
 
-  function save(yaml: string, isNew: boolean) {
-    if (isNew) {
-      return ctx.resourceService.createGithubConnector(yaml).then(fetchData);
+  function save(type: string, yaml: string, isNew: boolean) {
+    if(type === 'github') {
+        return save_github(yaml, isNew);
     }
-    return ctx.resourceService.updateGithubConnector(yaml).then(fetchData);
+
+    if(type === 'oidc') {
+        return save_oidc(yaml, isNew);
+    }
+
+    if(type === 'saml') {
+        return save_saml(yaml, isNew);
+    }
   }
 
-  function remove(name: string) {
-    return ctx.resourceService.deleteGithubConnector(name).then(fetchData);
+  function save_github(yaml: string, isNew: boolean) {
+    if (isNew) {
+        return ctx.resourceService.createGithubConnector(yaml).then(fetchData);
+      }
+      return ctx.resourceService.updateGithubConnector(yaml).then(fetchData);
+  }
+
+  function save_oidc(yaml: string, isNew: boolean) {
+    if (isNew) {
+        return ctx.resourceService.createOIDCConnector(yaml).then(fetchData);
+      }
+      return ctx.resourceService.updateOIDCConnector(yaml).then(fetchData);
+  }
+
+  function save_saml(yaml: string, isNew: boolean) {
+    if (isNew) {
+        return ctx.resourceService.createSAMLConnector(yaml).then(fetchData);
+      }
+      return ctx.resourceService.updateSAMLConnector(yaml).then(fetchData);
+  }
+
+  function remove(type: string, name: string) {
+    if(type === 'github') {
+        return ctx.resourceService.deleteGithubConnector(name).then(fetchData);
+    }
+
+    if(type === 'oidc') {
+        return ctx.resourceService.deleteOIDCConnector(name).then(fetchData);
+    }
+
+    if(type === 'saml') {
+        return ctx.resourceService.deleteSAMLConnector(name).then(fetchData);
+    }
   }
 
   useEffect(() => {
@@ -46,7 +92,9 @@ export default function useAuthConnectors() {
   }, []);
 
   return {
-    items,
+    github_items,
+    oidc_items,
+    saml_items,
     attempt,
     save,
     remove,

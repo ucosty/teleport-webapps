@@ -24,11 +24,12 @@ import { State as AuthConnectorState } from '../useAuthConnectors';
 export default function ConnectorList({ items, onEdit, onDelete }: Props) {
   items = items || [];
   const $items = items.map(item => {
-    const { id, name } = item;
+    const { id, kind, name } = item;
     return (
       <ConnectorListItem
         key={id}
         id={id}
+        kind={item.kind}
         onEdit={onEdit}
         onDelete={onDelete}
         name={name}
@@ -43,7 +44,7 @@ export default function ConnectorList({ items, onEdit, onDelete }: Props) {
   );
 }
 
-function ConnectorListItem({ name, id, onEdit, onDelete }) {
+function ConnectorListItem({ name, id, kind, onEdit, onDelete }) {
   const onClickEdit = () => onEdit(id);
   const onClickDelete = () => onDelete(id);
 
@@ -79,13 +80,7 @@ function ConnectorListItem({ name, id, onEdit, onDelete }) {
         width="200px"
         style={{ textAlign: 'center' }}
       >
-        <Icons.Github
-          style={{ textAlign: 'center' }}
-          fontSize="50px"
-          color="text.primary"
-          mb={3}
-          mt={3}
-        />
+        <ConnectorIcon kind={kind} />
         <Text style={{ width: '100%' }} typography="body2" bold caps>
           {name}
         </Text>
@@ -95,6 +90,35 @@ function ConnectorListItem({ name, id, onEdit, onDelete }) {
       </ButtonPrimary>
     </Flex>
   );
+}
+
+function ConnectorIcon(kind_wrapper: any) {
+    switch(kind_wrapper.kind) {
+        case 'github':
+            return (<Icons.Github
+                style={{ textAlign: 'center' }}
+                fontSize="50px"
+                color="text.primary"
+                mb={3}
+                mt={3}
+              />)
+        case 'saml':
+        case 'oidc':
+            return (<Icons.OpenID
+                style={{ textAlign: 'center' }}
+                fontSize="50px"
+                color="text.primary"
+                mb={3}
+                mt={3}
+              />)
+    }
+    return (<Icons.Github
+        style={{ textAlign: 'center' }}
+        fontSize="50px"
+        color="text.primary"
+        mb={3}
+        mt={3}
+      />)
 }
 
 const menuActionProps = {

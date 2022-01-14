@@ -15,8 +15,10 @@ limitations under the License.
 */
 
 import github from 'raw-loader!./github.yaml';
+import oidc from 'raw-loader!./oidc.yaml';
+import saml from 'raw-loader!./saml.yaml';
 
-const templates = { github };
+const templates = { github, oidc, saml };
 
-export { github };
+export { github, oidc, saml };
 export default templates;

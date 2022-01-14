@@ -17,7 +17,7 @@ import {
   FeatureHeader,
   FeatureHeaderTitle,
 } from 'teleport/components/Layout';
-import { Indicator, Text, Box, Flex, Link, Alert, ButtonPrimary } from 'design';
+import { Indicator, Text, Box, Flex, Link, Alert, ButtonPrimary, MenuItem, Menu } from 'design';
 import ResourceEditor from 'teleport/components/ResourceEditor';
 import useResources from 'teleport/components/useResources';
 import EmptyList from './EmptyList';
@@ -25,6 +25,7 @@ import ConnectorList from './ConnectorList';
 import DeleteConnectorDialog from './DeleteConnectorDialog';
 import useAuthConnectors, { State } from './useAuthConnectors';
 import templates from './templates';
+import { CarrotDown } from 'design/Icon';
 
 export default function Container() {
   const state = useAuthConnectors();
@@ -32,31 +33,26 @@ export default function Container() {
 }
 
 export function AuthConnectors(props: State) {
-  const { attempt, items, remove, save } = props;
+  const { attempt, github_items, oidc_items, saml_items, remove, save } = props;
+  const items = [...github_items, ...oidc_items, ...saml_items];
   const isEmpty = items.length === 0;
   const resources = useResources(items, templates);
 
   const title =
     resources.status === 'creating'
-      ? 'Creating a new github connector'
-      : 'Editing github connector';
+      ? "Creating a new ${kind} connector"
+      : "Editing ${kind} connector";
 
   function handleOnSave(content: string) {
     const isNew = resources.status === 'creating';
-    return save(content, isNew);
+    return save(resources.item.kind, content, isNew);
   }
 
   return (
     <FeatureBox>
       <FeatureHeader>
         <FeatureHeaderTitle>Auth Connectors</FeatureHeaderTitle>
-        <ButtonPrimary
-          ml="auto"
-          width="240px"
-          onClick={() => resources.create('github')}
-        >
-          New Github Connector
-        </ButtonPrimary>
+        <NewConnectorButton handler={resources.create} />
       </FeatureHeader>
       {attempt.status === 'failed' && <Alert children={attempt.statusText} />}
       {attempt.status === 'processing' && (
@@ -111,7 +107,7 @@ export function AuthConnectors(props: State) {
       )}
       {(resources.status === 'creating' || resources.status === 'editing') && (
         <ResourceEditor
-          title={title}
+          title={title.replace('${kind}', resources.item.kind)}
           onSave={handleOnSave}
           text={resources.item.content}
           name={resources.item.name}
@@ -123,9 +119,103 @@ export function AuthConnectors(props: State) {
         <DeleteConnectorDialog
           name={resources.item.name}
           onClose={resources.disregard}
-          onDelete={() => remove(resources.item.name)}
+          onDelete={() => remove(resources.item.kind, resources.item.name)}
         />
       )}
     </FeatureBox>
   );
 }
+
+function renderMenuItem(resource: any, name: string, kind: string) {
+    return (
+        <MenuItem ml="auto" width="240px" onClick={() => resource.handler(kind)}>{name}</MenuItem>
+    );
+}
+
+class ConnectorCreateButton extends React.Component {
+    anchorEl = null;
+
+    state = {
+        open: false,
+    };
+
+    onOpen = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.stopPropagation();
+        this.setState({ open: true });
+      };
+
+      onClose = () => {
+        this.setState({ open: false });
+      };
+
+    render() {
+        const { open } = this.state;
+        const { children } = this.props;
+        return (
+          <>
+           <ButtonPrimary
+            ml="auto"
+            width="240px"
+            size="medium"
+            setRef={e => (this.anchorEl = e)}
+            onClick={this.onOpen}
+            >
+              CREATE CONNECTOR
+              <CarrotDown ml={2} mr={-2} fontSize="2" color="text.secondary" />
+            </ButtonPrimary>
+            <Menu
+              getContentAnchorEl={null}
+              menuListCss={menuListCss}
+              anchorEl={this.anchorEl}
+              open={open}
+              onClose={this.onClose}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'right',
+              }}
+            >
+              {open && this.renderItems(children)}
+            </Menu>
+          </>
+        );
+      }
+
+      renderItems(children) {
+        const filtered = React.Children.toArray(children);
+        const cloned = filtered.map((child: React.ReactElement) => {
+          return React.cloneElement(child, {
+            onClick: this.makeOnClick(child.props.onClick),
+          });
+        });
+
+        return cloned;
+      }
+
+      makeOnClick(cb) {
+        return e => {
+          e.stopPropagation();
+          this.onClose();
+          cb && cb(e);
+        };
+      }
+
+}
+
+const menuListCss = () => `
+min-width: 240px;
+`;
+
+function NewConnectorButton(handler: any) {
+    const $items = [] as React.ReactNode[];
+    $items.push(renderMenuItem(handler, 'Github', 'github'));
+    $items.push(renderMenuItem(handler, 'OpenID Connect', 'oidc'));
+    $items.push(renderMenuItem(handler, 'SAML', 'saml'));
+
+    return (
+        <ConnectorCreateButton children={$items} />
+    );
+  }

@@ -139,6 +139,8 @@ const cfg = {
 
     rolesPath: '/v1/webapi/roles/:name?',
     githubConnectorsPath: '/v1/webapi/github/:name?',
+    oidcConnectorsPath: '/v1/webapi/oidc/:name?',
+    samlConnectorsPath: '/v1/webapi/saml/:name?',
     trustedClustersPath: '/v1/webapi/trustedcluster/:name?',
 
     joinTokenPath: '/v1/webapi/token',
@@ -404,6 +406,14 @@ const cfg = {
 
   getGithubConnectorsUrl(name?: string) {
     return generatePath(cfg.api.githubConnectorsPath, { name });
+  },
+
+  getOIDCConnectorsUrl(name?: string) {
+    return generatePath(cfg.api.oidcConnectorsPath, { name });
+  },
+
+  getSAMLConnectorsUrl(name?: string) {
+    return generatePath(cfg.api.samlConnectorsPath, { name });
   },
 
   getTrustedClustersUrl(name?: string) {
