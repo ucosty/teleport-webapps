@@ -15,6 +15,12 @@ class ResourceService {
       .then(res => makeResourceList<'github'>(res));
   }
 
+  fetchOIDCConnectors() {
+    return api
+      .get(cfg.getOIDCConnectorsUrl())
+      .then(res => makeResourceList<'oidc'>(res));
+  }
+
   fetchRoles() {
     return api
       .get(cfg.getRolesUrl())
@@ -39,6 +45,13 @@ class ResourceService {
       .then(res => makeResource<'github'>(res));
   }
 
+  createOIDCConnector(content: string) {
+    return api
+      .post(cfg.getOIDCConnectorsUrl(), { content })
+      .then(res => makeResource<'oidc'>(res));
+  }
+
+
   updateTrustedCluster(content: string) {
     return api
       .put(cfg.getTrustedClustersUrl(), { content })
@@ -57,6 +70,12 @@ class ResourceService {
       .then(res => makeResource<'github'>(res));
   }
 
+  updateOIDCConnector(content: string) {
+    return api
+      .put(cfg.getOIDCConnectorsUrl(), { content })
+      .then(res => makeResource<'oidc'>(res));
+  }
+
   deleteTrustedCluster(name: string) {
     return api.delete(cfg.getTrustedClustersUrl(name));
   }
@@ -67,6 +86,10 @@ class ResourceService {
 
   deleteGithubConnector(name: string) {
     return api.delete(cfg.getGithubConnectorsUrl(name));
+  }
+
+  deleteOIDCConnector(name: string) {
+    return api.delete(cfg.getOIDCConnectorsUrl(name));
   }
 }
 
