@@ -1,0 +1,17 @@
+kind: oidc
+metadata:
+  name: new_oidc_connector
+spec:
+  claims_to_roles:
+  - claim: hd
+    roles:
+    - editor
+    value: example.com
+  client_id: <client id>
+  client_secret: <client secret>
+  display: Google
+  issuer_url: https://<issuer-url>
+  redirect_url: https://<cluster-url>/v1/webapi/oidc/callback
+  scope:
+  - <scope value>
+version: v2
